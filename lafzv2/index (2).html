@@ -1,0 +1,2596 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Lafz Locator</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Space+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --pink: #FF2E93;
+            --yel: #FFE600;
+            --cy: #00E5FF;
+            --or: #FF6B00;
+            --pu: #7B2FFF;
+            --li: #C6FF00;
+            --ink: #0A0A0A;
+            --paper: #F5F0E6;
+            box-sizing: border-box;
+            padding-top: env(safe-area-inset-top, 0px);
+            padding-bottom: env(safe-area-inset-bottom, 0px)
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            border-radius: 0
+        }
+
+        html {
+            scroll-padding-top: env(safe-area-inset-top, 0px)
+        }
+
+        body {
+            background: var(--paper);
+            color: var(--ink);
+            font-family: 'Space Mono', monospace;
+            overflow-x: hidden
+        }
+
+        .d {
+            font-family: 'Archivo Black', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: -.04em;
+            line-height: .85
+        }
+
+        .s {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            text-transform: none;
+            letter-spacing: -.02em
+        }
+
+        .lab {
+            text-transform: uppercase;
+            letter-spacing: .15em;
+            font-size: .75rem;
+            font-weight: 700
+        }
+
+        section {
+            border-bottom: 3px solid var(--ink);
+            padding: clamp(2rem, 6vw, 5rem) clamp(1rem, 4vw, 3rem);
+            position: relative;
+            overflow: hidden
+        }
+
+        #qbar {
+            background: var(--ink);
+            color: var(--yel);
+            border-bottom: 3px solid var(--pink);
+            overflow: hidden;
+            white-space: nowrap;
+            padding: .65rem 0;
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-weight: 700;
+            font-size: clamp(.85rem, 1.6vw, 1.05rem);
+            letter-spacing: .02em;
+            position: relative;
+            z-index: 55
+        }
+
+        #qtrack {
+            display: inline-block;
+            will-change: transform;
+            animation: qscroll var(--qt, 60s) linear infinite;
+            padding-left: 1rem
+        }
+
+        #qtrack span {
+            margin: 0 2rem;
+            display: inline-block
+        }
+
+        #qtrack span::before {
+            content: "✦";
+            color: var(--pink);
+            margin-right: .8rem;
+            font-style: normal
+        }
+
+        #qbar:hover #qtrack {
+            animation-play-state: paused
+        }
+
+        @keyframes qscroll {
+            from {
+                transform: translateX(0)
+            }
+
+            to {
+                transform: translateX(-50%)
+            }
+        }
+
+        /* ==================== VIDEO PRELOADER ==================== */
+        #pre {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--ink);
+            overflow: hidden
+        }
+
+        #pre video {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 0;
+            background: #000
+        }
+
+        #skipIntro {
+            position: absolute;
+            right: calc(1rem + env(safe-area-inset-right, 0px));
+            bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+            z-index: 3;
+            font: 700 .7rem 'Space Mono', monospace;
+            letter-spacing: .15em;
+            text-transform: uppercase;
+            padding: .6rem .9rem;
+            background: var(--ink);
+            color: var(--yel);
+            border: 3px solid var(--yel);
+            box-shadow: 4px 4px 0 var(--pink);
+            cursor: pointer;
+            transition: background .2s, color .2s
+        }
+
+        #skipIntro:hover {
+            background: var(--pink);
+            color: #fff;
+            border-color: var(--ink)
+        }
+
+        .ch {
+            display: inline-block
+        }
+
+        #hero {
+            background: var(--pink);
+            color: #fff;
+            min-height: 100vh
+        }
+
+        #hero h1 {
+            font-size: clamp(3rem, 17vw, 15rem)
+        }
+
+        #hero h1 span.l {
+            display: block;
+            overflow: hidden;
+            padding-bottom: .04em
+        }
+
+        .out {
+            color: transparent;
+            -webkit-text-stroke: 3px #fff
+        }
+
+        .words {
+            height: 1.2em;
+            overflow: hidden;
+            font-size: clamp(1.5rem, 5vw, 3.5rem);
+            margin-top: 1rem;
+            color: var(--yel)
+        }
+
+        .words div {
+            height: 1.2em
+        }
+
+        .lines {
+            height: 1.2em;
+            overflow: hidden;
+            margin-top: .7rem;
+            font-size: clamp(1.05rem, 2.8vw, 1.9rem);
+            color: var(--yel);
+            letter-spacing: .01em;
+            position: relative;
+            z-index: 2;
+            max-width: 34ch
+        }
+
+        .lines div {
+            height: 1.2em;
+            line-height: 1.2;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis
+        }
+
+        .lines b {
+            color: #fff;
+            font-weight: 700
+        }
+
+        @media(max-width:520px) {
+            .lines {
+                font-size: .95rem;
+                max-width: 100%
+            }
+        }
+
+        .stk {
+            position: absolute;
+            background: var(--yel);
+            color: var(--ink);
+            border: 3px solid var(--ink);
+            padding: .5rem .8rem;
+            box-shadow: 6px 6px 0 var(--ink);
+            font-weight: 700;
+            font-size: .8rem
+        }
+
+        #feat h2,
+        #search h2,
+        #pods h2 {
+            font-size: clamp(2.5rem, 9vw, 7rem);
+            margin-bottom: 2rem
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1.1rem;
+            padding: 1.5rem 0;
+            border: 0;
+            background: transparent
+        }
+
+        .cell {
+            aspect-ratio: 3/4;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid var(--ink);
+            cursor: pointer;
+            background: #fff;
+            box-shadow: 3px 3px 0 var(--ink);
+            transition: transform .3s cubic-bezier(.2, .9, .3, 1), box-shadow .3s cubic-bezier(.2, .9, .3, 1)
+        }
+
+        .cell:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0 var(--pink)
+        }
+
+        .cov {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: flex-end;
+            padding: .85rem;
+            color: #fff;
+            font-size: clamp(.7rem, 1.05vw, .9rem);
+            line-height: 1.2;
+            background: var(--c);
+            overflow: hidden;
+            transition: transform .4s cubic-bezier(.2, .9, .3, 1)
+        }
+
+        .cell:hover .cov {
+            transform: scale(1.05)
+        }
+
+        .cov img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 0
+        }
+
+        .cov::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(0, 0, 0, .72) 0%, rgba(0, 0, 0, .25) 48%, rgba(0, 0, 0, 0) 100%);
+            z-index: 1;
+            pointer-events: none
+        }
+
+        .ctitle {
+            position: relative;
+            z-index: 2;
+            font-weight: 700;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, .5);
+            max-height: 3em;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical
+        }
+
+        .cell::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: var(--c);
+            mix-blend-mode: multiply;
+            opacity: .18;
+            transition: opacity .3s;
+            z-index: 2;
+            pointer-events: none
+        }
+
+        .cell:hover::after {
+            opacity: 0
+        }
+
+        .num {
+            position: absolute;
+            top: .45rem;
+            left: .45rem;
+            background: rgba(255, 255, 255, .92);
+            color: var(--ink);
+            border: 1.5px solid var(--ink);
+            padding: .12rem .35rem;
+            font-size: .58rem;
+            font-weight: 700;
+            letter-spacing: .08em;
+            z-index: 3;
+            transform: translateY(-160%);
+            opacity: 0;
+            transition: transform .3s cubic-bezier(.2, .9, .3, 1), opacity .3s
+        }
+
+        .cell:hover .num {
+            transform: none;
+            opacity: 1
+        }
+
+        .lb {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--ink);
+            color: #fff;
+            padding: .65rem .75rem;
+            transform: translateY(101%);
+            transition: transform .3s cubic-bezier(.2, .9, .3, 1);
+            z-index: 4;
+            border-top: 2px solid var(--pink)
+        }
+
+        .cell:hover .lb {
+            transform: none
+        }
+
+        .lb b {
+            display: block;
+            font-size: .72rem;
+            font-weight: 700;
+            line-height: 1.25;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis
+        }
+
+        .lb small {
+            display: block;
+            font-size: .6rem;
+            color: var(--yel);
+            opacity: .9;
+            margin-top: .2rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis
+        }
+
+        #search {
+            background: var(--yel)
+        }
+
+        #search h2 em {
+            color: var(--pink)
+        }
+
+        .in,
+        input,
+        textarea {
+            font: inherit;
+            border: 3px solid var(--ink);
+            background: #fff;
+            padding: .8rem;
+            width: 100%;
+            outline: none
+        }
+
+        .search-row {
+            display: flex;
+            gap: .6rem;
+            align-items: stretch;
+            max-width: 100%
+        }
+
+        .search-row #q {
+            flex: 1
+        }
+
+        #q {
+            font-family: 'Archivo Black';
+            font-size: clamp(1.1rem, 3.4vw, 2.4rem);
+            text-transform: uppercase;
+            box-shadow: 10px 10px 0 var(--ink);
+            transition: transform .1s, box-shadow .1s
+        }
+
+        #q:focus {
+            box-shadow: 10px 10px 0 var(--pink);
+            transform: translate(-3px, -3px)
+        }
+
+        #qgo {
+            background: var(--ink);
+            color: var(--yel);
+            border: 3px solid var(--ink);
+            padding: 0 1.2rem;
+            font: inherit;
+            font-weight: 700;
+            letter-spacing: .15em;
+            text-transform: uppercase;
+            font-size: clamp(.7rem, 1.4vw, .95rem);
+            cursor: pointer;
+            box-shadow: 10px 10px 0 var(--pink);
+            white-space: nowrap;
+            transition: transform .1s, box-shadow .1s, background .2s
+        }
+
+        #qgo:hover {
+            background: var(--pink);
+            color: #fff
+        }
+
+        #qgo:active {
+            transform: translate(-3px, -3px);
+            box-shadow: 7px 7px 0 var(--ink)
+        }
+
+        #dd {
+            margin-top: 1.2rem;
+            background: #fff;
+            border: 3px solid var(--ink);
+            display: none
+        }
+
+        #dd div {
+            padding: .8rem;
+            border-bottom: 2px solid var(--ink);
+            cursor: pointer;
+            font-weight: 700;
+            text-transform: uppercase
+        }
+
+        #dd div:hover {
+            background: var(--ink);
+            color: var(--yel)
+        }
+
+        #dd div:last-child {
+            border: 0
+        }
+
+        #res {
+            margin-top: 2rem
+        }
+
+        .card {
+            position: relative;
+            display: flex;
+            gap: 1.8rem;
+            background: #fff;
+            border: 3px solid var(--ink);
+            box-shadow: 10px 10px 0 var(--ink);
+            padding: 1.5rem;
+            flex-wrap: wrap;
+            align-items: flex-start
+        }
+
+        .card .cv {
+            position: relative;
+            overflow: hidden;
+            width: 200px;
+            min-width: 200px;
+            flex-shrink: 0;
+            aspect-ratio: 2/3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: #fff;
+            padding: .5rem;
+            border: 3px solid var(--ink);
+            box-shadow: 5px 5px 0 var(--pink);
+            transition: box-shadow .2s, transform .2s
+        }
+
+        .card:hover .cv {
+            box-shadow: 8px 8px 0 var(--pink);
+            transform: translate(-2px, -2px)
+        }
+
+        .card .cv img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 0
+        }
+
+        .card .cv .d {
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, .7);
+            padding: .5rem;
+            font-size: 1.1rem
+        }
+
+        .card-body {
+            flex: 1;
+            min-width: 220px
+        }
+
+        .card-title {
+            font-family: 'Archivo Black', sans-serif;
+            text-transform: uppercase;
+            font-size: clamp(1.4rem, 3.2vw, 2.2rem);
+            line-height: .95;
+            letter-spacing: -.03em;
+            padding-right: 5.5rem
+        }
+
+        .card a,
+        .card .link-btn {
+            display: inline-block;
+            margin: .5rem .5rem 0 0;
+            border: 3px solid var(--ink);
+            padding: .3rem .6rem;
+            color: var(--ink);
+            font-weight: 700;
+            text-decoration: none;
+            font-size: .8rem;
+            cursor: pointer;
+            background: #fff;
+            font-family: inherit
+        }
+
+        .card a:hover,
+        .card .link-btn:hover {
+            background: var(--pink);
+            color: #fff
+        }
+
+        .card-x {
+            position: absolute;
+            top: .6rem;
+            right: .6rem;
+            z-index: 6;
+            background: var(--paper);
+            color: var(--ink);
+            border: 2px solid var(--ink);
+            padding: .35rem .65rem;
+            font: inherit;
+            font-weight: 700;
+            font-size: .7rem;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: 3px 3px 0 var(--pink);
+            transition: all .15s
+        }
+
+        .card-x:hover {
+            background: var(--pink);
+            color: #fff;
+            box-shadow: 3px 3px 0 var(--ink)
+        }
+
+        .loc-line {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            margin-top: .5rem;
+            font-size: .85rem;
+            flex-wrap: wrap
+        }
+
+        .loc-line b {
+            font-weight: 700
+        }
+
+        .link-3d {
+            display: inline-flex;
+            align-items: center;
+            gap: .3rem;
+            border: 2px solid var(--ink);
+            background: var(--yel);
+            color: var(--ink);
+            padding: .28rem .55rem;
+            font: inherit;
+            font-weight: 700;
+            font-size: .68rem;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: 3px 3px 0 var(--ink);
+            transition: all .15s
+        }
+
+        .link-3d:hover {
+            background: var(--ink);
+            color: var(--yel);
+            transform: translate(-1px, -1px);
+            box-shadow: 4px 4px 0 var(--pink)
+        }
+
+        .link-3d::before {
+            content: "🧭"
+        }
+
+        #view3dMod {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at 50% 50%, rgba(255, 46, 147, .15), rgba(10, 10, 10, .92));
+            backdrop-filter: blur(6px);
+            z-index: 220;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+            overflow-y: auto
+        }
+
+        #view3dMod.on {
+            display: flex
+        }
+
+        .view3d-wrap {
+            width: min(820px, 100%);
+            position: relative;
+            animation: v3dIn .55s cubic-bezier(.2, .9, .3, 1)
+        }
+
+        @keyframes v3dIn {
+            from {
+                transform: perspective(900px) rotateX(12deg) scale(.9);
+                opacity: 0
+            }
+
+            to {
+                transform: perspective(900px) rotateX(0) scale(1);
+                opacity: 1
+            }
+        }
+
+        .view3d-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: .8rem;
+            gap: .8rem;
+            flex-wrap: wrap
+        }
+
+        .view3d-title {
+            font-family: 'Archivo Black', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            font-size: clamp(.85rem, 1.6vw, 1.1rem);
+            color: #fff
+        }
+
+        .view3d-title em {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            color: var(--pink);
+            text-transform: none;
+            letter-spacing: 0;
+            margin-left: .4rem
+        }
+
+        .view3d-actions {
+            display: flex;
+            gap: .5rem
+        }
+
+        .view3d-actions button {
+            font: inherit;
+            font-weight: 700;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            font-size: .65rem;
+            padding: .45rem .8rem;
+            border: 3px solid var(--ink);
+            background: var(--paper);
+            color: var(--ink);
+            cursor: pointer;
+            box-shadow: 3px 3px 0 var(--pink);
+            transition: all .15s
+        }
+
+        .view3d-actions button:hover {
+            background: var(--pink);
+            color: #fff;
+            box-shadow: 3px 3px 0 var(--ink)
+        }
+
+        .view3d-stage {
+            position: relative;
+            background: linear-gradient(145deg, #1a1a1a, #0a0a0a);
+            border: 3px solid var(--ink);
+            box-shadow: 0 0 0 3px var(--pink), 0 30px 80px rgba(0, 0, 0, .6);
+            padding: clamp(.8rem, 2.5vw, 1.4rem);
+            transform-style: preserve-3d;
+            perspective: 1200px;
+            overflow: hidden;
+        }
+
+        .view3d-stage::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            background-image:
+                linear-gradient(rgba(255, 46, 147, .09) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 46, 147, .09) 1px, transparent 1px);
+            background-size: 26px 26px;
+            pointer-events: none;
+        }
+
+        .view3d-frame {
+            position: relative;
+            border: 2px solid var(--pink);
+            background: #000;
+            overflow: hidden;
+            aspect-ratio: 16/10;
+            transform: perspective(1100px) rotateX(3deg);
+            transition: transform .5s cubic-bezier(.2, .9, .3, 1);
+            z-index: 1;
+        }
+
+        .view3d-stage:hover .view3d-frame {
+            transform: perspective(1100px) rotateX(0deg) scale(1.01)
+        }
+
+        .view3d-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block
+        }
+
+        .view3d-frame::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: linear-gradient(120deg, rgba(255, 255, 255, .14) 0%, rgba(255, 255, 255, 0) 35%, rgba(255, 255, 255, 0) 65%, rgba(255, 46, 147, .16) 100%);
+        }
+
+        .view3d-caption {
+            position: relative;
+            z-index: 1;
+            margin-top: 1rem;
+            text-align: center;
+            color: #eee;
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-size: clamp(.8rem, 1.5vw, .95rem);
+        }
+
+        .view3d-caption .loc-chip {
+            display: inline-block;
+            background: var(--yel);
+            color: var(--ink);
+            border: 2px solid var(--ink);
+            padding: .25rem .7rem;
+            margin-top: .4rem;
+            font-family: 'Space Mono', monospace;
+            font-style: normal;
+            font-weight: 700;
+            font-size: .7rem;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+        }
+
+        .view3d-hint {
+            margin-top: .6rem;
+            text-align: center;
+            font-family: 'Space Mono', monospace;
+            font-size: .62rem;
+            letter-spacing: .18em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, .5);
+        }
+
+        .sums-title {
+            margin-top: 1.2rem;
+            padding-top: .9rem;
+            border-top: 2px solid var(--ink);
+            font-family: 'Archivo Black';
+            text-transform: uppercase;
+            font-size: .9rem;
+            letter-spacing: .05em
+        }
+
+        .sums-title::before {
+            content: "✦ ";
+            color: var(--pink)
+        }
+
+        .sum-list {
+            margin: .7rem 0
+        }
+
+        .sum-item {
+            background: var(--paper);
+            border-left: 4px solid var(--pink);
+            padding: .6rem .8rem;
+            margin-bottom: .5rem;
+            font-size: .85rem;
+            line-height: 1.55
+        }
+
+        .sum-item .tag {
+            display: inline-block;
+            font-size: .58rem;
+            letter-spacing: .12em;
+            font-weight: 700;
+            color: var(--pink);
+            text-transform: uppercase;
+            margin-bottom: .2rem
+        }
+
+        .sum-empty {
+            color: #888;
+            font-size: .85rem;
+            font-style: italic;
+            margin: .4rem 0
+        }
+
+        .add-sum {
+            margin-top: 1rem;
+            padding: .9rem;
+            background: var(--paper);
+            border: 2px dashed var(--ink)
+        }
+
+        .add-sum textarea {
+            width: 100%;
+            min-height: 72px;
+            font-size: .85rem;
+            margin-bottom: .6rem;
+            resize: vertical;
+            background: #fff
+        }
+
+        .add-sum .btn {
+            font-size: .75rem;
+            padding: .55rem 1rem
+        }
+
+        .sum-msg {
+            margin-top: .5rem
+        }
+
+        #pods {
+            background: var(--cy)
+        }
+
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0;
+            margin-bottom: 1.5rem
+        }
+
+        .tabs button,
+        .btn {
+            font: inherit;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .1em;
+            border: 3px solid var(--ink);
+            background: #fff;
+            padding: .7rem 1rem;
+            cursor: pointer;
+            margin: 0 -3px -3px 0
+        }
+
+        .tabs button.on,
+        .btn {
+            background: var(--ink);
+            color: var(--yel)
+        }
+
+        .btn:hover {
+            background: var(--pink);
+            color: #fff
+        }
+
+        .tabs button:hover {
+            background: var(--yel)
+        }
+
+        .pane {
+            display: none
+        }
+
+        .pane.on {
+            display: block
+        }
+
+        .apane {
+            display: none
+        }
+
+        .apane.on {
+            display: block
+        }
+
+        .frm {
+            display: grid;
+            gap: .8rem;
+            max-width: 560px
+        }
+
+        .g2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1rem
+        }
+
+        .dc {
+            border: 3px solid var(--ink);
+            background: #fff;
+            box-shadow: 5px 5px 0 var(--ink);
+            padding: .6rem;
+            font-size: .8rem
+        }
+
+        .dc .cv {
+            aspect-ratio: 2/3;
+            background: var(--or);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            margin-bottom: .5rem;
+            padding: .5rem;
+            position: relative;
+            overflow: hidden
+        }
+
+        .dc .cv img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover
+        }
+
+        .clamp {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden
+        }
+
+        .clamp.expanded {
+            display: block;
+            -webkit-line-clamp: unset;
+            overflow: visible
+        }
+
+        .dc-info {
+            font-size: .75rem;
+            color: #444;
+            line-height: 1.5;
+            margin-top: .35rem
+        }
+
+        .dc-note {
+            font-size: .72rem;
+            color: #7a3a3a;
+            line-height: 1.5;
+            font-style: italic;
+            margin-top: .35rem
+        }
+
+        .read-more {
+            display: inline-block;
+            margin-top: .3rem;
+            background: transparent;
+            border: 0;
+            color: var(--pink);
+            font: inherit;
+            font-weight: 700;
+            font-size: .65rem;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            cursor: pointer;
+            padding: .15rem 0;
+            text-decoration: underline;
+            text-underline-offset: 2px
+        }
+
+        .read-more:hover {
+            color: var(--ink)
+        }
+
+        .dn-text {
+            font-size: .82rem;
+            line-height: 1.55;
+            color: #333;
+            margin-top: .25rem
+        }
+
+        .dn {
+            border: 3px solid var(--ink);
+            border-left: 12px solid var(--pink);
+            background: #fff;
+            padding: .7rem;
+            margin-bottom: .8rem
+        }
+
+        .ok {
+            background: var(--li);
+            border: 3px solid var(--ink);
+            padding: 1rem;
+            margin-top: 1rem;
+            font-weight: 700
+        }
+
+        footer {
+            background: var(--ink);
+            color: #fff;
+            padding: clamp(2rem, 6vw, 4rem) clamp(1rem, 4vw, 3rem)
+        }
+
+        footer h2 {
+            font-size: clamp(3.5rem, 15vw, 14rem);
+            margin-bottom: 2rem
+        }
+
+        footer h2 em {
+            color: var(--pink)
+        }
+
+        .mod {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 10, 10, .7);
+            z-index: 150;
+            display: none;
+            justify-content: center;
+            align-items: flex-start;
+            padding: calc(2rem + env(safe-area-inset-top, 0px)) 1rem 2rem;
+            overflow: auto
+        }
+
+        .mod.on {
+            display: flex
+        }
+
+        .box {
+            background: var(--paper);
+            border: 3px solid var(--ink);
+            box-shadow: 10px 10px 0 var(--pink);
+            padding: 1.5rem;
+            width: min(560px, 100%);
+            position: relative
+        }
+
+        .x {
+            position: absolute;
+            top: .5rem;
+            right: .5rem;
+            padding: .3rem .6rem
+        }
+
+        .box h3 {
+            padding-right: 3rem
+        }
+
+        input[type=color] {
+            width: 100%;
+            height: 44px;
+            padding: 2px;
+            margin-top: .3rem
+        }
+
+        #aopen {
+            position: fixed;
+            top: calc(1rem + env(safe-area-inset-top, 0px));
+            right: 1rem;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            border: 3px solid var(--ink);
+            background: var(--yel);
+            font: italic 700 1.3rem 'Playfair Display', serif;
+            cursor: pointer;
+            z-index: 60;
+            box-shadow: 4px 4px 0 var(--ink)
+        }
+
+        #aopen:hover {
+            background: var(--pink);
+            color: #fff
+        }
+
+        #tk {
+            position: fixed;
+            left: 1rem;
+            bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+            width: 220px;
+            background: var(--ink);
+            color: #fff;
+            border: 3px solid var(--yel);
+            box-shadow: 8px 8px 0 var(--pink);
+            padding: .6rem;
+            font-size: .7rem;
+            z-index: 50
+        }
+
+        #tk .cv {
+            height: 50px;
+            background: var(--pu);
+            margin-bottom: .4rem;
+            position: relative;
+            overflow: hidden
+        }
+
+        #tk .cv img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover
+        }
+
+        #cur {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 14px;
+            height: 14px;
+            margin: -7px 0 0 -7px;
+            border-radius: 50%;
+            background: var(--pink);
+            mix-blend-mode: difference;
+            pointer-events: none;
+            z-index: 200
+        }
+
+        #certMod {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 10, 10, .88);
+            z-index: 210;
+            display: none;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 2rem 1rem;
+            overflow-y: auto
+        }
+
+        #certMod.on {
+            display: flex
+        }
+
+        .cert-wrap {
+            width: min(900px, 100%);
+            position: relative;
+            animation: certPop .5s cubic-bezier(.2, .9, .3, 1)
+        }
+
+        @keyframes certPop {
+            from {
+                transform: scale(.92);
+                opacity: 0
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1
+            }
+        }
+
+        .cert-toolbar {
+            display: flex;
+            gap: .6rem;
+            justify-content: flex-end;
+            margin-bottom: .8rem;
+            flex-wrap: wrap
+        }
+
+        .cert-toolbar button {
+            font: inherit;
+            font-weight: 700;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            font-size: .7rem;
+            padding: .55rem .9rem;
+            border: 3px solid var(--ink);
+            background: var(--paper);
+            color: var(--ink);
+            cursor: pointer;
+            box-shadow: 3px 3px 0 var(--pink);
+            transition: all .15s
+        }
+
+        .cert-toolbar button:hover {
+            background: var(--pink);
+            color: #fff;
+            box-shadow: 3px 3px 0 var(--ink)
+        }
+
+        .cert-toolbar button.primary {
+            background: var(--ink);
+            color: var(--yel);
+            box-shadow: 3px 3px 0 var(--pink)
+        }
+
+        .cert-toolbar button.primary:hover {
+            background: var(--pink);
+            color: #fff
+        }
+
+        .cert {
+            background: #f9f1de;
+            background-image: radial-gradient(circle at 20% 15%, rgba(255, 255, 255, .55), transparent 45%), radial-gradient(circle at 85% 90%, rgba(180, 145, 90, .16), transparent 55%);
+            border: 3px solid var(--ink);
+            outline: 14px double var(--ink);
+            outline-offset: -18px;
+            padding: clamp(1.7rem, 3.8vw, 2.8rem) clamp(1.5rem, 3vw, 2.4rem);
+            color: var(--ink);
+            font-family: 'Playfair Display', serif;
+            position: relative;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, .55);
+            overflow: hidden
+        }
+
+        .cert::before,
+        .cert::after {
+            content: "";
+            position: absolute;
+            width: 42px;
+            height: 42px;
+            border: 2px solid var(--ink);
+            pointer-events: none
+        }
+
+        .cert::before {
+            top: 22px;
+            left: 22px;
+            border-right: 0;
+            border-bottom: 0
+        }
+
+        .cert::after {
+            bottom: 22px;
+            right: 22px;
+            border-left: 0;
+            border-top: 0
+        }
+
+        .cert-head {
+            text-align: center;
+            margin-bottom: .8rem
+        }
+
+        .cert-brand {
+            font-family: 'Archivo Black', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: .22em;
+            font-size: clamp(.7rem, 1.3vw, .9rem)
+        }
+
+        .cert-uni {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-size: clamp(.7rem, 1.3vw, .85rem);
+            color: #6b4a2b;
+            margin-top: .2rem;
+            letter-spacing: .06em
+        }
+
+        .cert-orn {
+            margin: .55rem 0;
+            color: #b8912b;
+            letter-spacing: .7em;
+            font-size: .7rem
+        }
+
+        .cert-title {
+            text-align: center;
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            font-style: italic;
+            font-size: clamp(2rem, 5.5vw, 3.4rem);
+            letter-spacing: -.02em;
+            line-height: 1;
+            margin-top: .4rem
+        }
+
+        .cert-title-sub {
+            text-align: center;
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-weight: 400;
+            font-size: clamp(.95rem, 2vw, 1.3rem);
+            color: #7a3a3a;
+            margin-top: .15rem
+        }
+
+        .cert-presents {
+            text-align: center;
+            font-family: 'Space Mono', monospace;
+            text-transform: uppercase;
+            font-size: clamp(.6rem, 1.1vw, .72rem);
+            letter-spacing: .22em;
+            color: #6b4a2b;
+            margin-top: 1.6rem
+        }
+
+        .cert-name {
+            text-align: center;
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            font-size: clamp(1.8rem, 5.2vw, 3rem);
+            letter-spacing: -.02em;
+            line-height: 1.05;
+            margin: .35rem 0 .2rem;
+            display: inline-block;
+            width: 100%
+        }
+
+        .cert-name span {
+            display: inline-block;
+            padding: 0 .8rem .25rem;
+            border-bottom: 2px solid var(--ink)
+        }
+
+        .cert-for {
+            text-align: center;
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-size: clamp(.85rem, 1.6vw, 1rem);
+            color: #4a3a24;
+            margin-top: 1rem
+        }
+
+        .cert-book {
+            text-align: center;
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-weight: 700;
+            font-size: clamp(1.3rem, 3.4vw, 2rem);
+            color: #7a1f4a;
+            margin: .35rem auto .3rem;
+            max-width: 90%;
+            line-height: 1.2
+        }
+
+        .cert-msg {
+            text-align: center;
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(.75rem, 1.5vw, .92rem);
+            color: #3a2a14;
+            line-height: 1.65;
+            max-width: 620px;
+            margin: .9rem auto 0;
+            font-style: italic
+        }
+
+        .cert-bottom {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 1.2rem;
+            align-items: end;
+            margin-top: 1.8rem
+        }
+
+        .cert-col {
+            text-align: center
+        }
+
+        .cert-line {
+            border-top: 1.5px solid var(--ink);
+            margin: 0 .5rem .3rem
+        }
+
+        .cert-lab {
+            font-family: 'Space Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: .15em;
+            font-size: .6rem;
+            color: #6b4a2b;
+            font-weight: 700
+        }
+
+        .cert-val {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-size: clamp(.7rem, 1.3vw, .82rem);
+            color: var(--ink);
+            margin-top: .15rem;
+            word-break: break-word
+        }
+
+        .cert-seal {
+            width: clamp(84px, 11vw, 118px);
+            height: clamp(84px, 11vw, 118px);
+            border-radius: 50%;
+            background: radial-gradient(circle at 32% 30%, #ff5aa8 0%, #d90060 55%, #7a0038 100%);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Archivo Black', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: .14em;
+            font-size: clamp(.5rem, .9vw, .7rem);
+            line-height: 1.15;
+            text-align: center;
+            transform: rotate(-9deg);
+            box-shadow: 0 5px 14px rgba(217, 0, 96, .45), inset 0 -4px 10px rgba(0, 0, 0, .35), inset 0 4px 8px rgba(255, 255, 255, .35);
+            position: relative;
+            padding: .4rem
+        }
+
+        .cert-seal::before {
+            content: "";
+            position: absolute;
+            inset: 8px;
+            border: 1.5px dashed rgba(255, 255, 255, .55);
+            border-radius: 50%
+        }
+
+        .cert-seal b {
+            font-size: 1.1em
+        }
+
+        .cert-foot {
+            text-align: center;
+            margin-top: 1.2rem;
+            font-family: 'Space Mono', monospace;
+            font-size: .6rem;
+            letter-spacing: .2em;
+            text-transform: uppercase;
+            color: #6b4a2b;
+            opacity: .8
+        }
+
+        @media(max-width:640px) {
+            .cert {
+                border-width: 2px;
+                outline-width: 8px;
+                outline-offset: -10px;
+                padding: 1.5rem 1rem
+            }
+
+            .cert::before,
+            .cert::after {
+                width: 26px;
+                height: 26px
+            }
+
+            .cert::before {
+                top: 14px;
+                left: 14px
+            }
+
+            .cert::after {
+                bottom: 14px;
+                right: 14px
+            }
+
+            .cert-bottom {
+                gap: .5rem;
+                margin-top: 1.2rem
+            }
+
+            .cert-seal {
+                width: 74px;
+                height: 74px;
+                font-size: .5rem
+            }
+
+            .view3d-frame {
+                aspect-ratio: 4/3
+            }
+        }
+
+        @media(max-width:1200px) {
+            .grid {
+                grid-template-columns: repeat(4, 1fr)
+            }
+        }
+
+        @media(max-width:1000px) {
+            #tk {
+                display: none
+            }
+
+            .grid {
+                grid-template-columns: repeat(3, 1fr)
+            }
+        }
+
+        @media(max-width:760px) {
+            .grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: .7rem
+            }
+
+            .stk {
+                display: none
+            }
+
+            .cov {
+                padding: .55rem;
+                font-size: .68rem
+            }
+
+            .ctitle {
+                max-height: 2.4em;
+                -webkit-line-clamp: 2
+            }
+
+            .lb {
+                padding: .45rem .55rem
+            }
+
+            .lb b {
+                font-size: .62rem
+            }
+
+            .lb small {
+                font-size: .55rem
+            }
+
+            .card {
+                padding: 1rem;
+                gap: 1rem
+            }
+
+            .card-title {
+                padding-right: 0;
+                padding-top: 2rem
+            }
+
+            .card .cv {
+                width: 150px;
+                min-width: 150px;
+                box-shadow: 3px 3px 0 var(--pink)
+            }
+        }
+
+        @media(max-width:520px) {
+            .grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: .6rem
+            }
+
+            .search-row {
+                flex-direction: column
+            }
+
+            #qgo {
+                box-shadow: 6px 6px 0 var(--pink);
+                padding: .7rem 1rem
+            }
+
+            .card .cv {
+                width: 120px;
+                min-width: 120px;
+                box-shadow: 3px 3px 0 var(--pink)
+            }
+
+            .view3d-wrap {
+                width: 100%
+            }
+        }
+
+        @media(hover:none) {
+            #cur {
+                display: none
+            }
+        }
+
+        @media(prefers-reduced-motion:reduce) {
+            #qtrack {
+                animation: none !important
+            }
+
+            * {
+                animation: none !important;
+                transition: none !important
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="cur"></div>
+
+    <div id="qbar">
+        <div id="qtrack">✦ Loading quotes…</div>
+    </div>
+
+    <button id="aopen" title="Admin">i</button>
+    <div id="amod" class="mod">
+        <div class="box"><button class="btn x" data-x>✕</button>
+            <div id="abody"></div>
+        </div>
+    </div>
+
+    <div id="view3dMod">
+        <div class="view3d-wrap">
+            <div class="view3d-toolbar">
+                <div class="view3d-title">📍 Library Location <em id="v3dBook">—</em></div>
+                <div class="view3d-actions">
+                    <button id="v3dPrint" type="button">🖨 Print</button>
+                    <button id="v3dClose" type="button">✕ Close</button>
+                </div>
+            </div>
+            <div class="view3d-stage">
+                <div class="view3d-frame" id="v3dFrame"></div>
+                <div class="view3d-caption">
+                    <div id="v3dCaption">— Library View —</div>
+                    <div class="loc-chip" id="v3dLocChip">—</div>
+                </div>
+                <div class="view3d-hint">◆ Perspective View · Lafz Locator ◆</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="certMod">
+        <div class="cert-wrap">
+            <div class="cert-toolbar">
+                <button id="certDl" class="primary" type="button">⬇ Download PNG</button>
+                <button id="certPrint" type="button">🖨 Print</button>
+                <button id="certClose" type="button">✕ Close</button>
+            </div>
+            <div class="cert" id="certBox">
+                <div class="cert-head">
+                    <div class="cert-brand">✦ LAFZ LOCATOR ✦</div>
+                    <div class="cert-uni">Lovely Professional University · Phagwara, Punjab</div>
+                    <div class="cert-orn">✦ ✦ ✦</div>
+                </div>
+                <div class="cert-title">Certificate</div>
+                <div class="cert-title-sub">of Gratitude</div>
+                <div class="cert-presents">This is proudly presented to</div>
+                <div class="cert-name"><span id="certName">Donor Name</span></div>
+                <div class="cert-for">for generously donating the book</div>
+                <div class="cert-book" id="certBook">— Book Title —</div>
+                <div class="cert-msg">
+                    Your generosity adds another voice to our library and keeps the love for words alive.
+                    Thank you for being a true <b>Lafz Hero</b> — someone who believes stories deserve to be shared.
+                </div>
+                <div class="cert-bottom">
+                    <div class="cert-col">
+                        <div class="cert-line"></div>
+                        <div class="cert-lab">Date</div>
+                        <div class="cert-val" id="certDate">—</div>
+                    </div>
+                    <div class="cert-seal"><span>LAFZ</span><b>HERO</b><span>✶</span></div>
+                    <div class="cert-col">
+                        <div class="cert-line"></div>
+                        <div class="cert-lab">Certificate ID</div>
+                        <div class="cert-val" id="certId">—</div>
+                    </div>
+                </div>
+                <div class="cert-foot">Lafz Locator · A Wall of Voices · 2026</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== VIDEO PRELOADER ==================== -->
+    <div id="pre">
+        <video id="introVid" src="intro.mp4" muted playsinline autoplay preload="auto"></video>
+        <button id="skipIntro" type="button">Skip ✕</button>
+    </div>
+
+    <section id="hero">
+        <div class="lab">Lovely Professional University · Phagwara, Punjab</div>
+        <h1 class="d" style="margin-top:2rem"><span class="l"><b class="sp">LAFZ</b></span><span class="l"><b
+                    class="sp out">LO</b></span><span class="l"><b class="sp">CA<i class="s">tor</i></b></span></h1>
+        <div class="words d">
+            <div>DREAM.</div>
+            <div>DISCOVER..</div>
+            <div>DONATE...</div>
+            <div>DELIGHT....</div>
+        </div>
+
+        <div class="lines s" id="lines">
+            <div>Every emotion has a <b>lafz</b> (word),</div>
+            <div>Every word has a <b>book</b>,</div>
+            <div>and every book has a <b>journey</b>.</div>
+            <div><b>Pass it on.</b></div>
+        </div>
+
+        <div class="stk" style="right:6%;top:14%;transform:rotate(6deg)">📖 500+ BOOKS</div>
+        <div class="stk" style="right:12%;top:46%;background:var(--cy);transform:rotate(-5deg)">✦ POP LITERATURE</div>
+        <div class="stk" style="right:4%;bottom:12%;background:var(--li);transform:rotate(3deg)">🎁 DONATE · RESERVE
+        </div>
+    </section>
+
+    <section id="feat">
+        <div class="lab" style="margin-bottom:1rem">12 voices · one wall</div>
+        <h2 class="d" data-r>The <em class="s" style="color:var(--pink)">shelf</em> of icons</h2>
+        <div class="grid" id="grid"></div>
+    </section>
+
+    <section id="search">
+        <h2 class="d" data-r>Find a <em class="s">book</em></h2>
+        <div class="search-row">
+            <input id="q" placeholder="Type a title…" autocomplete="off">
+            <button id="qgo" type="button">Search →</button>
+        </div>
+        <div id="dd"></div>
+        <div id="res"></div>
+    </section>
+
+    <section id="pods">
+        <h2 class="d" data-r>Lafz Pods</h2>
+        <div class="tabs"><button class="on" data-t="don">Donate a Book</button><button data-t="exp">Explore
+                Pods</button><button data-t="res">Reserve a Book</button><button data-t="wall">Wall of Donors</button>
+        </div>
+        <div class="pane on" id="don">
+            <div class="frm">
+                <input id="dn" placeholder="DONOR NAME">
+                <input id="de" type="email" placeholder="DONOR EMAIL">
+                <input id="dt" placeholder="BOOK TITLE">
+                <input id="dc" placeholder="COVER IMAGE URL">
+                <input id="di" placeholder="BOOK INFO">
+                <input id="dnote" placeholder="HANDWRITTEN NOTE (OPTIONAL)">
+                <label
+                    style="display:flex;align-items:center;gap:.5rem;font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase">
+                    <input type="checkbox" id="dnotify" checked style="width:auto">
+                    Book hone par mujhe email bhejo
+                </label>
+                <button class="btn" id="dgo">Donate</button>
+                <div id="dmsg"></div>
+            </div>
+        </div>
+        <div class="pane" id="exp">
+            <div class="g2" id="eg"></div>
+        </div>
+        <div class="pane" id="res2"></div>
+        <div class="pane" id="resv">
+            <div class="frm">
+                <input id="sid" placeholder="STUDENT ID">
+                <input id="sem" type="email" placeholder="YOUR EMAIL">
+                <input id="bid" placeholder="DONATION ID (E.G. DN-123456)">
+                <label
+                    style="display:flex;align-items:center;gap:.5rem;font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase">
+                    <input type="checkbox" id="sshare" checked style="width:auto">
+                    Donor ko mera email share karo
+                </label>
+                <button class="btn" id="rgo">Confirm</button>
+                <div id="rmsg"></div>
+            </div>
+        </div>
+        <div class="pane" id="wall">
+            <div id="wl"></div>
+        </div>
+    </section>
+
+    <footer>
+        <h2 class="d">Lafz <em class="s">locator</em></h2>
+        <p class="lab">© 2026 Lafz Locator — Lovely Professional University</p>
+        <p class="lab" style="margin-top:.5rem;color:var(--yel)">Built with lafz &amp; a lot of chai</p>
+    </footer>
+    <div id="tk">
+        <div class="lab" style="color:var(--yel);margin-bottom:.4rem">Latest donations</div>
+        <div id="tki">No donations yet</div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollToPlugin.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.14/dist/lenis.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script>
+        const C = ['#FF2E93', '#FFE600', '#00E5FF', '#FF6B00', '#7B2FFF', '#C6FF00', '#E10600', '#1F4BFF'];
+        const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+        const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+        // ---------- EMAILJS ----------
+        const EMAILJS = {
+            publicKey: 'AProNaozaxWnZAgyU',
+            serviceId: 'service_i0xk4wm',
+            templateId: 'template_3zyt5fr'
+        };
+        if (window.emailjs) {
+            emailjs.init({ publicKey: EMAILJS.publicKey });
+            console.log('[Lafz] EmailJS ready ✓');
+        } else {
+            console.warn('[Lafz] EmailJS CDN load nahi hua');
+        }
+
+        const HAS_GSAP = !!(window.gsap && window.ScrollTrigger);
+        if (HAS_GSAP) {
+            gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
+            if (window.Lenis) {
+                try {
+                    const l = new Lenis();
+                    l.on('scroll', ScrollTrigger.update);
+                    gsap.ticker.add(t => l.raf(t * 1000));
+                    gsap.ticker.lagSmoothing(0);
+                } catch (e) { console.warn('[Lafz] Lenis init fail:', e); }
+            }
+        } else {
+            console.warn('[Lafz] GSAP/ScrollTrigger load nahi hua. Fallbacks chalenge.');
+        }
+
+        function split(el) { if (!el) return; el.innerHTML = [...el.textContent].map(c => `<span class="ch">${c}</span>`).join('') }
+
+        function clampText(text, cls, limit) {
+            const t = String(text || '').trim();
+            if (!t) return '';
+            if (t.length <= (limit || 140)) return `<div class="${cls}">${esc(t)}</div>`;
+            return `<div class="${cls} clamp">${esc(t)}</div><button type="button" class="read-more" data-rm>Read more ↓</button>`;
+        }
+        document.addEventListener('click', e => {
+            const btn = e.target.closest('[data-rm]'); if (!btn) return;
+            const target = btn.previousElementSibling; if (!target) return;
+            const open = target.classList.toggle('expanded');
+            btn.textContent = open ? 'Show less ↑' : 'Read more ↓';
+        });
+
+        const DEFAULT_QUOTES = [
+            "A room without books is like a body without a soul. — Cicero",
+            "There is no friend as loyal as a book. — Ernest Hemingway",
+            "So many books, so little time. — Frank Zappa",
+            "Kavita shabd nahi, ehsaas hai.",
+            "Books are a uniquely portable magic. — Stephen King"
+        ];
+        let quotesData = {};
+        function renderQuotesBar() {
+            const arr = Object.values(quotesData).map(v => String(v || '').trim()).filter(Boolean);
+            const list = arr.length ? arr : DEFAULT_QUOTES;
+            const one = list.map(q => `<span>${esc(q)}</span>`).join('');
+            $('#qtrack').innerHTML = one + one;
+            const dur = Math.max(40, list.length * 15);
+            $('#qtrack').style.setProperty('--qt', dur + 's');
+        }
+        renderQuotesBar();
+
+        let B = [], don = [], gridDone = false, currentViewBook = null;
+        const light = c => c == '#FFE600' || c == '#C6FF00';
+        const covr = (t, p) => p ? `<img src="${esc(p)}" alt="${esc(t)}" onerror="this.style.display='none'">` : '';
+
+        function renderGrid() {
+            const g = B.slice(0, 12);
+            $('#grid').innerHTML = g.length ? g.map((b, i) => `
+   <div class="cell" data-i="${i}" style="--c:${b.c}">
+     <div class="cov">${covr(b.title, b.pic)}<span class="ctitle">${esc(b.title)}</span></div>
+     <div class="num lab">${String(i + 1).padStart(2, '0')}</div>
+     <div class="lb"><b>${esc(b.title)}</b><small>${esc(b.author || b.id)}</small></div>
+   </div>`).join('') : '<p style="grid-column:1/-1;padding:2rem">No books found in the database yet.</p>';
+            if (g.length && !gridDone && HAS_GSAP) { gridDone = true; gsap.from('.cell', { scale: .94, opacity: 0, y: 20, stagger: .05, duration: .5, ease: 'power3.out' }) }
+        }
+        $('#grid').innerHTML = '<p style="grid-column:1/-1;padding:2rem">Loading your shelf…</p>';
+
+        $('#grid').addEventListener('click', e => {
+            const c = e.target.closest('.cell'); if (!c) return;
+            const b = B[c.dataset.i]; if (!b) return;
+            $('#q').value = b.title; show(b);
+            if (HAS_GSAP) gsap.to(window, { duration: .5, scrollTo: '#search', ease: 'power2.inOut' });
+            else $('#search').scrollIntoView({ behavior: 'smooth' });
+        });
+
+        const lk = (u, t) => u ? `<a href="${esc(u)}" target="_blank" rel="noopener">${t}</a>` : '';
+
+        function renderSummaries(b) {
+            const sm = (b.sum || []).map(s => typeof s === 'string' ? s : (s && (s.text || s.summary || s.content)) || '').filter(Boolean);
+            if (!sm.length) return '<p class="sum-empty">Abhi tak koi summary nahi. Pehla ban jao!</p>';
+            return sm.map((s, i) => {
+                const long = String(s).length > 200;
+                return long
+                    ? `<div class="sum-item" style="padding:0;background:transparent;border:0"><span class="tag">Reader ${i + 1}</span><div class="clamp" style="font-size:.85rem;line-height:1.55">${esc(s)}</div><button type="button" class="read-more" data-rm>Read more ↓</button></div>`
+                    : `<div class="sum-item"><span class="tag">Reader ${i + 1}</span><br>${esc(s)}</div>`;
+            }).join('');
+        }
+
+        function show(b) {
+            $('#dd').style.display = 'none';
+            currentViewBook = b;
+            const sm = renderSummaries(b);
+            const coverInner = b.pic
+                ? covr(b.title, b.pic)
+                : `<span class="d" style="position:relative;z-index:2;padding:.5rem">${esc(b.title)}</span>`;
+            const has3D = !!b.locPic;
+            const locLine = (b.loc || has3D) ? `
+   <div class="loc-line">
+     ${b.loc ? `<span>📍 Location: <b>${esc(b.loc)}</b></span>` : ''}
+     ${has3D ? `<button type="button" class="link-3d" id="view3dBtn">3D View</button>` : ''}
+   </div>` : '';
+            $('#res').innerHTML = `
+  <div class="card">
+    <button class="card-x" id="cardClose" type="button">✕ Cancel</button>
+    <div class="cv d" style="background:${b.c};${light(b.c) && !b.pic ? 'color:#0A0A0A' : ''}">
+      ${coverInner}
+    </div>
+    <div class="card-body">
+      <div class="card-title">${esc(b.title)}</div>
+      ${b.author ? `<p class="lab" style="margin-top:.5rem;color:var(--pink)">${esc(b.author)}</p>` : ''}
+      <p style="margin-top:.5rem;font-size:.85rem">ID: <b>${esc(b.id)}</b></p>
+      ${locLine}
+      <div>${lk(b.ebook, 'E-Book')}${lk(b.audio, 'Audiobook')}${lk(b.purchase, 'Buy')}</div>
+      <div class="sums-title">Readers' Summaries</div>
+      <div class="sum-list" id="sumList">${sm}</div>
+      <div class="add-sum">
+        <p class="lab" style="margin-bottom:.45rem;font-size:.65rem">✍️ Add your summary</p>
+        <textarea id="newSum" placeholder="Apni summary, thoughts ya review likhein..."></textarea>
+        <button class="btn" id="sumgo" type="button">+ Add Summary</button>
+        <div class="sum-msg" id="sumMsg"></div>
+      </div>
+    </div>
+  </div>`;
+            if (HAS_GSAP) gsap.from('.card', { y: 60, opacity: 0, duration: .5, ease: 'power3.out' });
+            $('#cardClose').onclick = closeBook;
+            $('#sumgo').onclick = () => addSummary(b);
+            $('#newSum').addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); addSummary(b); } });
+            const v3d = $('#view3dBtn');
+            if (v3d) v3d.onclick = () => open3DView(b);
+        }
+
+        function closeBook() {
+            currentViewBook = null; $('#res').innerHTML = ''; $('#q').value = ''; $('#dd').style.display = 'none';
+            if (HAS_GSAP) gsap.to(window, { duration: .4, scrollTo: '#search', ease: 'power2.inOut' });
+        }
+
+        function addSummary(b) {
+            const txt = $('#newSum').value.trim(), msg = $('#sumMsg');
+            if (!txt) { msg.innerHTML = '<div style="background:var(--yel);border:2px solid var(--ink);padding:.5rem;font-size:.75rem;font-weight:700">Kuch likho pehle ✍️</div>'; return; }
+            if (!db || !b.key) { msg.innerHTML = '<div style="background:var(--or);color:#fff;border:2px solid var(--ink);padding:.5rem;font-size:.75rem;font-weight:700">Database offline.</div>'; return; }
+            const btn = $('#sumgo'); btn.disabled = true; btn.textContent = 'Saving…';
+            const newSum = (b.sum || []).map(s => typeof s === 'string' ? s : (s && (s.text || s.summary || s.content)) || '').filter(Boolean).concat([txt]);
+            db.ref('books/' + b.key + '/summaries').set(newSum)
+                .then(() => {
+                    msg.innerHTML = '<div style="background:var(--li);border:2px solid var(--ink);padding:.5rem;font-size:.75rem;font-weight:700">Summary added ✓ Shukriya!</div>';
+                    $('#newSum').value = '';
+                    const list = $('#sumList');
+                    if (list) {
+                        const empty = list.querySelector('.sum-empty'); if (empty) empty.remove();
+                        const div = document.createElement('div');
+                        if (txt.length > 200) div.innerHTML = `<div class="sum-item" style="padding:0;background:transparent;border:0"><span class="tag">Reader ${newSum.length}</span><div class="clamp" style="font-size:.85rem;line-height:1.55">${esc(txt)}</div><button type="button" class="read-more" data-rm>Read more ↓</button></div>`;
+                        else div.innerHTML = `<div class="sum-item"><span class="tag">Reader ${newSum.length}</span><br>${esc(txt)}</div>`;
+                        list.appendChild(div.firstElementChild);
+                        if (HAS_GSAP) gsap.from(list.lastElementChild, { y: 14, opacity: 0, duration: .4, ease: 'power3.out' });
+                    }
+                    b.sum = newSum;
+                })
+                .catch(err => { console.error(err); msg.innerHTML = '<div style="background:var(--or);color:#fff;border:2px solid var(--ink);padding:.5rem;font-size:.75rem;font-weight:700">Save fail. Check rules.</div>'; })
+                .finally(() => { btn.disabled = false; btn.textContent = '+ Add Summary'; });
+        }
+
+        // ==================== 3D VIEW ====================
+        let current3DBook = null;
+
+        function open3DView(b) {
+            current3DBook = b;
+            if (!b || !b.locPic) { return; }
+            $('#v3dBook').textContent = '· ' + b.title;
+            $('#v3dLocChip').textContent = b.loc || 'Lafz Library';
+            $('#v3dCaption').textContent = b.loc ? ('Where to find: ' + b.loc) : 'Lafz Library Shelf';
+            $('#v3dFrame').innerHTML = `<img src="${esc(b.locPic)}" alt="${esc(b.title)} location" onerror="this.parentNode.innerHTML='<div style=\\'display:flex;align-items:center;justify-content:center;height:100%;color:#ff2e93;font-family:Space Mono,monospace;font-size:.8rem;letter-spacing:.15em;text-transform:uppercase\\'>Image failed to load</div>'">`;
+            $('#view3dMod').classList.add('on');
+            document.body.style.overflow = 'hidden';
+            if (HAS_GSAP) {
+                gsap.from('.view3d-stage', { y: 50, opacity: 0, duration: .6, ease: 'power3.out' });
+                gsap.from('.view3d-frame', { rotateY: -18, duration: .9, delay: .15, ease: 'power3.out' });
+            }
+        }
+
+        function close3DView() {
+            $('#view3dMod').classList.remove('on');
+            document.body.style.overflow = '';
+            current3DBook = null;
+        }
+
+        $('#v3dClose').onclick = close3DView;
+        $('#view3dMod').addEventListener('click', e => { if (e.target.id === 'view3dMod') close3DView(); });
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') {
+                if ($('#view3dMod').classList.contains('on')) close3DView();
+                else if ($('#certMod').classList.contains('on')) closeCertificate();
+            }
+        });
+
+        $('#v3dPrint').onclick = () => {
+            if (!current3DBook) return;
+            const b = current3DBook;
+            const w = window.open('', '_blank', 'width=1000,height=700');
+            if (!w) { alert('Popup blocked.'); return; }
+            w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>${esc(b.title)} — Location</title>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Playfair+Display:ital,wght@0,700;1,700&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0}
+    body{background:#0a0a0a;padding:20px;font-family:'Playfair Display',serif;color:#fff;display:flex;flex-direction:column;align-items:center;min-height:100vh}
+    h1{font-family:'Archivo Black',sans-serif;text-transform:uppercase;font-size:1.4rem;letter-spacing:.05em;margin-bottom:.3rem;text-align:center}
+    h1 em{font-family:'Playfair Display',serif;font-style:italic;color:#FF2E93;text-transform:none;letter-spacing:0}
+    .loc{font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:.15em;font-size:.7rem;color:#FFE600;margin-bottom:1rem;text-align:center}
+    .stage{background:linear-gradient(145deg,#1a1a1a,#0a0a0a);border:3px solid #FF2E93;box-shadow:0 0 0 3px #0a0a0a;padding:1.2rem;max-width:900px;width:100%}
+    .frame{border:2px solid #FF2E93;background:#000;aspect-ratio:16/10;overflow:hidden}
+    .frame img{width:100%;height:100%;object-fit:cover;display:block}
+    .foot{margin-top:.8rem;text-align:center;font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.5)}
+    @page{size:A4 landscape;margin:1cm}
+  </style></head><body>
+    <h1>Library Location <em>· ${esc(b.title)}</em></h1>
+    <div class="loc">◆ ${esc(b.loc || 'Lafz Library')} ◆</div>
+    <div class="stage"><div class="frame"><img src="${esc(b.locPic)}" alt="Location"></div></div>
+    <div class="foot">Lafz Locator · Lovely Professional University · 2026</div>
+  </body></html>`);
+            w.document.close();
+            setTimeout(() => { w.focus(); w.print(); }, 700);
+        };
+
+        // ==================== SEARCH + UI ====================
+        $('#q').addEventListener('input', e => {
+            const v = e.target.value.trim().toLowerCase(), d = $('#dd'); if (!v) { d.style.display = 'none'; return }
+            const m = B.filter(b => b.title.toLowerCase().includes(v) || (b.author || '').toLowerCase().includes(v) || String(b.id).toLowerCase().includes(v));
+            d.innerHTML = m.length ? m.slice(0, 8).map(b => `<div data-i="${B.indexOf(b)}">${esc(b.title)}${b.author ? ' — ' + esc(b.author) : ''}</div>`).join('') : '<div>No match — donate it?</div>';
+            d.style.display = 'block';
+        });
+        $('#dd').addEventListener('click', e => { const x = e.target.closest('[data-i]'); if (x) { const b = B[x.dataset.i]; $('#q').value = b.title; show(b) } });
+
+        $('#qgo').onclick = () => {
+            const v = $('#q').value.trim(); if (!v) { $('#q').focus(); return; }
+            const vl = v.toLowerCase();
+            let hit = B.find(b => b.title.toLowerCase() === vl || String(b.id).toLowerCase() === vl);
+            if (!hit) hit = B.find(b => b.title.toLowerCase().includes(vl) || (b.author || '').toLowerCase().includes(vl));
+            if (hit) { $('#q').value = hit.title; show(hit); }
+            else {
+                $('#dd').style.display = 'none';
+                $('#res').innerHTML = '<div class="ok" style="background:var(--yel)">Koi book nahi mili "' + esc(v) + '" ke liye.</div>';
+                if (HAS_GSAP) gsap.from('#res .ok', { y: 20, opacity: 0, duration: .4 });
+            }
+        };
+        $('#q').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('#qgo').click(); } });
+
+        $$('.tabs button').forEach(b => b.onclick = () => {
+            $$('.tabs button').forEach(x => x.classList.remove('on')); b.classList.add('on');
+            $$('.pane').forEach(p => p.classList.remove('on'));
+            $('#' + ({ don: 'don', exp: 'exp', res: 'resv', wall: 'wall' }[b.dataset.t])).classList.add('on')
+        });
+
+        let ti = 0;
+        function tick() {
+            const l = don.slice(-3).reverse();
+            if (!l.length) { $('#tki').textContent = 'No donations yet'; return }
+            const d = l[ti % l.length];
+            $('#tki').innerHTML = `<div class="cv">${covr(d.t, d.pic)}</div><b>${esc(d.t)}</b><br>${esc(d.n)} · ${esc(d.id)}`;
+            if (HAS_GSAP) gsap.from('#tki', { opacity: 0, duration: .3 });
+        }
+        setInterval(() => { ti++; tick() }, 4000);
+
+        function paint() {
+            $('#eg').innerHTML = don.length ? don.map(d => {
+                const infoHtml = d.info ? clampText(d.info, 'dc-info', 140) : '';
+                const noteHtml = d.note ? clampText(d.note, 'dc-note', 140) : '';
+                return `<div class="dc">
+     <div class="cv d" style="background:${d.c}">${esc(d.t)}${covr(d.t, d.pic)}</div>
+     <b>${esc(d.t)}</b><br>
+     <span style="font-size:.72rem">by ${esc(d.n)}</span><br>
+     <span style="font-size:.7rem;color:#666">ID: ${esc(d.id)}</span>
+     ${infoHtml}${noteHtml}
+   </div>`;
+            }).join('') : '<p>No pods yet. Be the first donor.</p>';
+
+            $('#wl').innerHTML = don.length ? don.map(d => {
+                const noteHtml = d.note ? clampText(d.note, 'dn-text', 160) : '';
+                return `<div class="dn"><b>${esc(d.n)}</b> · <span style="font-style:italic">${esc(d.t)}</span>${noteHtml}</div>`;
+            }).join('') : '<p>The wall is waiting for its first name.</p>';
+            tick();
+        }
+
+        // ==================== CERTIFICATE ====================
+        let lastCertData = null;
+        function openCertificate(donorName, bookTitle, certId) {
+            lastCertData = { donorName, bookTitle, certId };
+            $('#certName').textContent = donorName;
+            $('#certBook').textContent = '"' + bookTitle + '"';
+            $('#certId').textContent = certId;
+            const d = new Date();
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            $('#certDate').textContent = String(d.getDate()).padStart(2, '0') + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
+            $('#certMod').classList.add('on');
+            document.body.style.overflow = 'hidden';
+            if (HAS_GSAP) {
+                gsap.from('#certBox', { y: 40, opacity: 0, scale: .96, duration: .7, ease: 'power3.out' });
+                gsap.from('.cert-seal', { scale: 0, rotate: -90, duration: .9, delay: .35, ease: 'back.out(1.6)' });
+            }
+        }
+        function closeCertificate() {
+            $('#certMod').classList.remove('on');
+            document.body.style.overflow = '';
+        }
+        $('#certClose').onclick = closeCertificate;
+        $('#certMod').addEventListener('click', e => { if (e.target.id === 'certMod') closeCertificate(); });
+
+        $('#certDl').onclick = async () => {
+            if (!window.html2canvas) { alert('Download not available — try Print.'); return; }
+            const btn = $('#certDl'); const orig = btn.textContent;
+            btn.disabled = true; btn.textContent = '⏳ Rendering…';
+            try {
+                const canvas = await html2canvas($('#certBox'), {
+                    backgroundColor: '#f9f1de',
+                    scale: Math.min(3, window.devicePixelRatio ? window.devicePixelRatio * 1.5 : 2),
+                    useCORS: true, logging: false
+                });
+                const safeName = (lastCertData?.donorName || 'donor').replace(/[^a-z0-9]+/gi, '-');
+                const link = document.createElement('a');
+                link.download = `Lafz-Certificate-${safeName}.png`;
+                link.href = canvas.toDataURL('image/png');
+                document.body.appendChild(link); link.click(); document.body.removeChild(link);
+                btn.textContent = '✓ Downloaded';
+                setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 1400);
+            } catch (e) {
+                console.error(e); alert('Download fail. Try Print.');
+                btn.textContent = orig; btn.disabled = false;
+            }
+        };
+
+        $('#certPrint').onclick = () => {
+            const certHTML = $('#certBox').outerHTML;
+            const w = window.open('', '_blank', 'width=1000,height=700');
+            if (!w) { alert('Popup blocked.'); return; }
+            w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Lafz Certificate</title>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0}
+    body{background:#fff;padding:20px;font-family:'Playfair Display',serif;display:flex;justify-content:center}
+    .cert{background:#f9f1de;background-image:radial-gradient(circle at 20% 15%,rgba(255,255,255,.55),transparent 45%),radial-gradient(circle at 85% 90%,rgba(180,145,90,.16),transparent 55%);border:3px solid #0A0A0A;outline:14px double #0A0A0A;outline-offset:-18px;padding:2.8rem 2.4rem;color:#0A0A0A;position:relative;max-width:900px;width:100%;overflow:hidden}
+    .cert::before,.cert::after{content:"";position:absolute;width:42px;height:42px;border:2px solid #0A0A0A}
+    .cert::before{top:22px;left:22px;border-right:0;border-bottom:0}
+    .cert::after{bottom:22px;right:22px;border-left:0;border-top:0}
+    .cert-head{text-align:center;margin-bottom:.8rem}
+    .cert-brand{font-family:'Archivo Black',sans-serif;text-transform:uppercase;letter-spacing:.22em;font-size:.9rem}
+    .cert-uni{font-family:'Playfair Display',serif;font-style:italic;font-size:.85rem;color:#6b4a2b;margin-top:.2rem;letter-spacing:.06em}
+    .cert-orn{margin:.55rem 0;color:#b8912b;letter-spacing:.7em;font-size:.7rem}
+    .cert-title{text-align:center;font-family:'Playfair Display',serif;font-weight:700;font-style:italic;font-size:3.4rem;line-height:1;margin-top:.4rem}
+    .cert-title-sub{text-align:center;font-family:'Playfair Display',serif;font-style:italic;font-size:1.3rem;color:#7a3a3a;margin-top:.15rem}
+    .cert-presents{text-align:center;font-family:'Space Mono',monospace;text-transform:uppercase;font-size:.72rem;letter-spacing:.22em;color:#6b4a2b;margin-top:1.6rem}
+    .cert-name{text-align:center;font-family:'Playfair Display',serif;font-weight:700;font-size:3rem;line-height:1.05;margin:.35rem 0 .2rem;display:block;width:100%}
+    .cert-name span{display:inline-block;padding:0 .8rem .25rem;border-bottom:2px solid #0A0A0A}
+    .cert-for{text-align:center;font-family:'Playfair Display',serif;font-style:italic;font-size:1rem;color:#4a3a24;margin-top:1rem}
+    .cert-book{text-align:center;font-family:'Playfair Display',serif;font-style:italic;font-weight:700;font-size:2rem;color:#7a1f4a;margin:.35rem auto .3rem;max-width:90%;line-height:1.2}
+    .cert-msg{text-align:center;font-family:'Playfair Display',serif;font-size:.92rem;color:#3a2a14;line-height:1.65;max-width:620px;margin:.9rem auto 0;font-style:italic}
+    .cert-bottom{display:grid;grid-template-columns:1fr auto 1fr;gap:1.2rem;align-items:end;margin-top:1.8rem}
+    .cert-col{text-align:center}
+    .cert-line{border-top:1.5px solid #0A0A0A;margin:0 .5rem .3rem}
+    .cert-lab{font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:.15em;font-size:.6rem;color:#6b4a2b;font-weight:700}
+    .cert-val{font-family:'Playfair Display',serif;font-style:italic;font-size:.82rem;color:#0A0A0A;margin-top:.15rem}
+    .cert-seal{width:118px;height:118px;border-radius:50%;background:radial-gradient(circle at 32% 30%,#ff5aa8 0%,#d90060 55%,#7a0038 100%);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Archivo Black',sans-serif;text-transform:uppercase;letter-spacing:.14em;font-size:.7rem;line-height:1.15;text-align:center;transform:rotate(-9deg);box-shadow:0 5px 14px rgba(217,0,96,.45),inset 0 -4px 10px rgba(0,0,0,.35),inset 0 4px 8px rgba(255,255,255,.35);position:relative;padding:.4rem}
+    .cert-seal::before{content:"";position:absolute;inset:8px;border:1.5px dashed rgba(255,255,255,.55);border-radius:50%}
+    .cert-seal b{font-size:1.1em}
+    .cert-foot{text-align:center;margin-top:1.2rem;font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:#6b4a2b;opacity:.8}
+    @page{size:A4 landscape;margin:1cm}
+  </style></head><body>${certHTML}</body></html>`);
+            w.document.close();
+            setTimeout(() => { w.focus(); w.print(); }, 700);
+        };
+
+        $('#dgo').onclick = () => {
+            const n = $('#dn').value.trim();
+            const em = $('#de').value.trim();
+            const t = $('#dt').value.trim();
+            const m = $('#dmsg');
+            if (!n || !t) { m.innerHTML = '<div class="ok" style="background:var(--yel)">Name aur book title, please.</div>'; return }
+            if (em && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) { m.innerHTML = '<div class="ok" style="background:var(--yel)">Email valid nahi hai.</div>'; return }
+            if (!db) { m.innerHTML = '<div class="ok" style="background:var(--yel)">Database not connected.</div>'; return }
+            const certId = 'DN-' + String(Date.now()).slice(-6);
+            db.ref('lafzPodsDonations').push({
+                donorName: n,
+                donorEmail: em,
+                notifyByEmail: $('#dnotify').checked,
+                bookTitle: t,
+                bookImage: $('#dc').value.trim(),
+                coverUrl: $('#dc').value.trim(),
+                info: $('#di').value.trim(),
+                bookInfo: $('#di').value.trim(),
+                notes: $('#dnote').value.trim(),
+                id: certId,
+                timestamp: Date.now()
+            })
+                .then(() => {
+                    m.innerHTML = '<div class="ok">Donated ✓ Thank you, ' + esc(n) + '.</div>';
+                    ['#dn', '#de', '#dt', '#dc', '#di', '#dnote'].forEach(s => $(s).value = '');
+                    openCertificate(n, t, certId);
+                })
+                .catch(err => {
+                    console.error(err);
+                    openCertificate(n, t, certId);
+                    m.innerHTML = '<div class="ok" style="background:var(--or)">Certificate ban gaya, lekin save nahi hua. Check rules.</div>';
+                });
+        };
+
+        $('#rgo').onclick = async () => {
+            const s = $('#sid').value.trim();
+            const em = $('#sem').value.trim();
+            const bId = $('#bid').value.trim();
+            const msg = $('#rmsg');
+
+            if (!s || !em || !bId) {
+                msg.innerHTML = '<div class="ok" style="background:var(--yel)">Student ID, email aur donation ID — teeno chahiye.</div>';
+                return;
+            }
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) {
+                msg.innerHTML = '<div class="ok" style="background:var(--yel)">Email valid nahi hai.</div>';
+                return;
+            }
+
+            const q = bId.toLowerCase();
+            const dn = don.find(x => String(x.id).toLowerCase() === q);
+
+            if (!dn) {
+                msg.innerHTML = '<div class="ok" style="background:var(--or)">Donation ID nahi mili: ' + esc(bId) + '</div>';
+                return;
+            }
+
+            const bookingId = 'BK-' + String(Date.now()).slice(-6);
+            const bookingTime = new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+            const shareEmail = $('#sshare').checked;
+
+            msg.innerHTML = '<div class="ok" style="background:var(--yel)">Reserving…</div>';
+
+            try {
+                await db.ref('bookings').push({
+                    bookingId: bookingId,
+                    studentId: s,
+                    studentEmail: em,
+                    donationId: dn.id,
+                    bookTitle: dn.t,
+                    timestamp: Date.now()
+                });
+
+                let emailNote = '';
+                if (dn.email && dn.notify && window.emailjs) {
+                    try {
+                        await emailjs.send(EMAILJS.serviceId, EMAILJS.templateId, {
+                            donor_name: dn.n,
+                            donor_email: dn.email,
+                            to_email: dn.email,
+                            reply_to: em,
+                            book_title: dn.t,
+                            booker_id: s,
+                            booker_name: s,
+                            booker_email: shareEmail ? em : '(Student ne email share nahi kiya)',
+                            booking_id: bookingId,
+                            booking_time: bookingTime
+                        });
+                        emailNote = ' 📧 Donor ko email bhej diya.';
+                    } catch (e) {
+                        console.error('EmailJS fail:', e);
+                        emailNote = ' ⚠️ Email fail hua, booking save ho gayi.';
+                    }
+                } else if (!dn.email) {
+                    emailNote = ' (Is donor ne email nahi diya tha.)';
+                } else if (!dn.notify) {
+                    emailNote = ' (Donor ne email notification band kiya tha.)';
+                } else if (!window.emailjs) {
+                    emailNote = ' (EmailJS load nahi hua.)';
+                }
+
+                msg.innerHTML = '<div class="ok">Reserved: ' + esc(dn.t) + ' for student ' + esc(s) + '. Pick up within 48 hours.' + emailNote + '</div>';
+                $('#sid').value = ''; $('#sem').value = ''; $('#bid').value = '';
+            } catch (err) {
+                console.error(err);
+                msg.innerHTML = '<div class="ok" style="background:var(--or)">Booking save fail. Check rules.</div>';
+            }
+        };
+
+        // ---------- FIREBASE ----------
+        const FB = {
+            apiKey: "AIzaSyDEbseEYXuIQ-7R0HcfdMw6CbM1FFtkPnA",
+            authDomain: "poetbooksfinder.firebaseapp.com",
+            databaseURL: "https://poetbooksfinder-default-rtdb.firebaseio.com",
+            projectId: "poetbooksfinder",
+            storageBucket: "poetbooksfinder.firebasestorage.app",
+            messagingSenderId: "363460760222",
+            appId: "1:363460760222:web:5321ead1eb0223aab3618f"
+        };
+        let db = null, auth = null, th = {};
+
+        try {
+            if (window.firebase) {
+                firebase.initializeApp(FB);
+                db = firebase.database();
+                try { auth = firebase.auth(); } catch (e) { console.warn('Auth init fail', e); }
+                console.log('[Lafz] Firebase ready ✓');
+            } else {
+                console.error('[Lafz] firebase object missing — CDN blocked?');
+            }
+        } catch (e) { console.error('[Lafz] Firebase init error:', e); }
+
+        if (auth) {
+            auth.onAuthStateChanged(u => console.log('[Lafz] auth user:', u ? u.uid : 'none'));
+            auth.signInAnonymously().catch(e => console.warn('[Lafz] anon signin fail:', e && e.code));
+        }
+
+        const bad = m => { if (!B.length) $('#grid').innerHTML = '<p style="grid-column:1/-1;padding:2rem">' + m + '</p>'; };
+
+        if (db) {
+            db.ref('books').on('value', s => {
+                const v = s.val() || {};
+                B = Object.entries(v).map(([k, b], i) => ({
+                    key: k, id: b.id || k, title: b.title || 'Untitled', author: b.author || '',
+                    pic: b.pic || b.cover || b.image || '', loc: b.location || b.loc || '',
+                    locPic: b.locationImage || b.locPic || b.locationImageUrl || b.locImage || '',
+                    ebook: b.ebook || '', audio: b.audio || '', purchase: b.purchase || '',
+                    sum: Array.isArray(b.summaries) ? b.summaries : Object.values(b.summaries || {}),
+                    c: C[i % 8]
+                }));
+                console.log('[Lafz] books loaded:', B.length);
+                renderGrid();
+            }, err => { console.error('[Lafz] books read fail:', err); bad('Database denied access.'); });
+
+            db.ref('lafzPodsDonations').on('value', s => {
+                const v = s.val() || {};
+                don = Object.values(v).map((d, i) => ({
+                    n: d.donorName || d.donor || d.name || 'Anonymous',
+                    t: d.bookTitle || d.title || 'Untitled',
+                    pic: d.bookImage || d.coverUrl || d.cover || d.pic || d.image || '',
+                    info: d.info || d.bookInfo || '', note: d.notes || d.note || d.handwrittenNote || '',
+                    id: d.id || d.bookId || ('DN-' + (i + 1)),
+                    email: d.donorEmail || '',
+                    notify: d.notifyByEmail !== false,
+                    c: C[i % 8], ts: d.timestamp || 0
+                })).sort((a, b) => a.ts - b.ts);
+                console.log('[Lafz] donations loaded:', don.length);
+                paint();
+            }, err => { console.error('[Lafz] donations read fail:', err); });
+
+            db.ref('theme').on('value', s => {
+                const t = s.val(); th = t || {};
+                if (!t) { document.documentElement.style.removeProperty('--pink'); document.body.style.cssText = ''; return; }
+                if (t.accentColor) document.documentElement.style.setProperty('--pink', t.accentColor);
+                if (t.bgColor) document.body.style.background = t.bgColor;
+                if (t.textColor) document.body.style.color = t.textColor;
+                if (t.bgImage) document.body.style.backgroundImage = 'url("' + String(t.bgImage).replace(/"/g, '') + '")';
+            }, err => { console.warn('[Lafz] theme read fail:', err); });
+
+            db.ref('quotes').on('value', s => {
+                quotesData = s.val() || {};
+                renderQuotesBar();
+            }, err => { renderQuotesBar(); });
+
+            setTimeout(() => bad('Could not reach the database.'), 8000);
+        } else {
+            bad('Firebase did not load. CDN blocked?');
+        }
+
+        // ---------- ADMIN ----------
+        const am = $('#amod'), ab = $('#abody');
+        const openM = h => { ab.innerHTML = h; am.classList.add('on') };
+        const amsg = (t, bad) => { const el = $('#amsg'); if (el) el.innerHTML = '<div class="ok" style="background:' + (bad ? 'var(--or)' : 'var(--li)') + '">' + t + '</div>' };
+        am.addEventListener('click', e => { if (e.target === am || e.target.closest('[data-x]')) am.classList.remove('on') });
+        $('#aopen').onclick = () => auth && auth.currentUser ? dash() : login();
+
+        function login() {
+            openM('<h3 class="d" style="font-size:2rem;margin-bottom:1rem">Admin</h3><div class="frm"><input id="ae" type="email" placeholder="EMAIL"><input id="ap" type="password" placeholder="PASSWORD"><button class="btn" id="ago">Login</button><div id="amsg"></div></div>');
+            $('#ago').onclick = () => {
+                if (!auth) { amsg('Auth did not load.', 1); return }
+                auth.signInWithEmailAndPassword($('#ae').value.trim(), $('#ap').value).then(dash).catch(() => amsg('Wrong email or password.', 1))
+            }
+        }
+
+        function dash() {
+            openM(`
+   <h3 class="d" style="font-size:2rem;margin-bottom:1rem">Dashboard</h3>
+   <div class="tabs atabs">
+     <button class="on" data-at="aq">🎬 Quotes</button>
+     <button data-at="at">🎨 Theme</button>
+     <button data-at="ab">📚 Book</button>
+   </div>
+   <div class="apane on" id="aq">
+     <p class="lab" style="margin-bottom:.5rem">Top 5 Quotes</p>
+     <div class="frm">
+       <input id="q1" placeholder="QUOTE 1" value="${esc(quotesData.q1 || '')}">
+       <input id="q2" placeholder="QUOTE 2" value="${esc(quotesData.q2 || '')}">
+       <input id="q3" placeholder="QUOTE 3" value="${esc(quotesData.q3 || '')}">
+       <input id="q4" placeholder="QUOTE 4" value="${esc(quotesData.q4 || '')}">
+       <input id="q5" placeholder="QUOTE 5" value="${esc(quotesData.q5 || '')}">
+       <div><button class="btn" id="qsv">Save quotes</button> <button class="btn" id="qrs">Reset</button></div>
+     </div>
+   </div>
+   <div class="apane" id="at">
+     <p class="lab" style="margin-bottom:.5rem">Theme</p>
+     <div class="frm">
+       <input id="tbi" placeholder="BACKGROUND IMAGE URL" value="${esc(th.bgImage || '')}">
+       <label class="lab">Background <input id="tbc" type="color" value="${th.bgColor || '#F5F0E6'}"></label>
+       <label class="lab">Text <input id="ttc" type="color" value="${th.textColor || '#0A0A0A'}"></label>
+       <label class="lab">Accent <input id="tac" type="color" value="${th.accentColor || '#FF2E93'}"></label>
+       <div><button class="btn" id="tsv">Save theme</button> <button class="btn" id="trs">Reset</button></div>
+     </div>
+   </div>
+   <div class="apane" id="ab">
+     <p class="lab" style="margin-bottom:.5rem">Add book</p>
+     <div class="frm">
+       <input id="bt" placeholder="TITLE">
+       <input id="ba" placeholder="AUTHOR (OPTIONAL)">
+       <input id="bp" placeholder="COVER IMAGE URL">
+       <input id="bl" placeholder="LOCATION (E.G. RACK 4, SHELF 2)">
+       <input id="blp" placeholder="📍 LOCATION IMAGE URL (FOR 3D VIEW)">
+       <input id="be" placeholder="E-BOOK LINK">
+       <input id="bu" placeholder="AUDIOBOOK LINK">
+       <input id="bb" placeholder="PURCHASE LINK">
+       <input id="bs" placeholder="FIRST SUMMARY">
+       <button class="btn" id="bgo">Save book</button>
+     </div>
+   </div>
+   <div id="amsg"></div>
+   <button class="btn" id="alo" style="margin-top:1rem;background:#fff;color:var(--ink)">Logout</button>
+ `);
+            $$('.atabs button').forEach(btn => {
+                btn.onclick = () => {
+                    $$('.atabs button').forEach(x => x.classList.remove('on'));
+                    btn.classList.add('on');
+                    $$('.apane').forEach(p => p.classList.remove('on'));
+                    $('#' + btn.dataset.at).classList.add('on');
+                };
+            });
+            const err = () => amsg('Not allowed. Check database rules.', 1);
+            $('#qsv').onclick = () => {
+                const data = {};
+                for (let i = 1; i <= 5; i++) { const v = $('#q' + i).value.trim(); if (v) data['q' + i] = v; }
+                if (!Object.keys(data).length) { amsg('Kam se kam ek quote likho.', 1); return }
+                db.ref('quotes').set(data).then(() => amsg('Quotes saved ✓')).catch(err);
+            };
+            $('#qrs').onclick = () => { db.ref('quotes').remove().then(() => { amsg('Quotes reset.'); for (let i = 1; i <= 5; i++)$('#q' + i).value = ''; }).catch(err); };
+            $('#tsv').onclick = () => db.ref('theme').set({ bgImage: $('#tbi').value.trim(), bgColor: $('#tbc').value, textColor: $('#ttc').value, accentColor: $('#tac').value }).then(() => amsg('Theme saved.')).catch(err);
+            $('#trs').onclick = () => db.ref('theme').remove().then(() => amsg('Theme reset.')).catch(err);
+            $('#bgo').onclick = () => {
+                const t = $('#bt').value.trim();
+                if (!t) { amsg('Title is required.', 1); return }
+                const s = $('#bs').value.trim();
+                db.ref('books').push({
+                    id: 'LZ-' + String(Date.now()).slice(-5),
+                    title: t,
+                    author: $('#ba').value.trim(),
+                    pic: $('#bp').value.trim(),
+                    location: $('#bl').value.trim(),
+                    locationImage: $('#blp').value.trim(),
+                    ebook: $('#be').value.trim(),
+                    audio: $('#bu').value.trim(),
+                    purchase: $('#bb').value.trim(),
+                    summaries: s ? [s] : []
+                })
+                    .then(() => { amsg('Book saved.');['#bt', '#ba', '#bp', '#bl', '#blp', '#be', '#bu', '#bb', '#bs'].forEach(x => $(x).value = '') }).catch(err)
+            };
+            $('#alo').onclick = () => auth.signOut().then(() => am.classList.remove('on'));
+        }
+        paint();
+
+        if (HAS_GSAP) {
+            const qx = gsap.quickTo('#cur', 'x', { duration: .15, ease: 'power3' }), qy = gsap.quickTo('#cur', 'y', { duration: .15, ease: 'power3' });
+            addEventListener('mousemove', e => { qx(e.clientX); qy(e.clientY) });
+            document.addEventListener('mouseover', e => { const h = e.target.closest('a,button,input,.cell,.dc'); gsap.to('#cur', { scale: h ? 4.3 : 1, background: h ? '#fff' : '#FF2E93', duration: .2 }) });
+        } else {
+            document.getElementById('cur').style.display = 'none';
+        }
+
+        function heroIn() {
+            $$('.sp').forEach(el => { if (el.querySelector('i')) return; split(el); });
+            if (!HAS_GSAP) return;
+            gsap.from('#hero .ch', { yPercent: 115, stagger: .1, ease: 'power4.out', duration: .9 });
+            gsap.from('.stk', { scale: 0, stagger: .15, ease: 'back.out', delay: .6 });
+            gsap.from('.lines', { y: 22, opacity: 0, duration: .7, delay: 1, ease: 'power3.out' });
+            gsap.to('#hero h1', { yPercent: 15, opacity: .2, scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: true } });
+
+            const w = gsap.timeline({ repeat: -1 });
+            const rows = ['.words > div:first-child', '.lines > div:first-child'];
+            for (let i = 1; i <= 4; i++) {
+                w.to(rows, { marginTop: (-1.2 * i) + 'em', duration: .7, ease: 'power4.inOut', delay: 1.8 });
+            }
+            w.set(rows, { marginTop: 0 });
+
+            gsap.utils.toArray('[data-r]').forEach(el => gsap.from(el, { y: 46, opacity: 0, duration: .9, ease: 'power3.out', scrollTrigger: { trigger: el, start: 'top 88%' } }));
+            ScrollTrigger.refresh();
+        }
+
+        let preHidden = false;
+        function hidePreloader() {
+            if (preHidden) return; preHidden = true;
+            const p = document.getElementById('pre');
+            if (!p) { heroIn(); return; }
+            if (HAS_GSAP) { gsap.to('#pre', { yPercent: -100, duration: .8, ease: 'power4.inOut', onComplete: () => { p.style.display = 'none'; heroIn(); } }); }
+            else { p.style.display = 'none'; heroIn(); }
+        }
+
+        // ==================== VIDEO PRELOADER LOGIC ====================
+        function runPreloader() {
+            const v = document.getElementById('introVid');
+            const skip = document.getElementById('skipIntro');
+            if (skip) skip.onclick = hidePreloader;
+
+            if (!v) { hidePreloader(); return; }
+
+            // Video end hone par preloader hatao
+            v.addEventListener('ended', hidePreloader, { once: true });
+
+            // Autoplay try karo (muted hai to usually chal jayega)
+            const playPromise = v.play();
+            if (playPromise && playPromise.catch) {
+                playPromise.catch(err => {
+                    console.warn('[Lafz] video autoplay fail:', err);
+                    // Autoplay fail — 1.5 sec baad preloader hata do taaki user atak na jaye
+                    setTimeout(() => { if (!preHidden) hidePreloader(); }, 1500);
+                });
+            }
+
+            // Safety net — 30 sec me khud hat jaye
+            setTimeout(() => { if (!preHidden) hidePreloader(); }, 30000);
+        }
+
+        runPreloader();
+        addEventListener('load', () => { if (HAS_GSAP) ScrollTrigger.refresh(); });
+
+        window.LafzDebug = {
+            books: () => B, donations: () => don, quotes: () => quotesData,
+            previewCert: () => openCertificate('Demo Donor', 'The Alchemist', 'DN-123456'),
+            preview3D: () => open3DView({ title: 'The Alchemist', loc: 'Rack 4, Shelf 2', locPic: 'https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=1200' }),
+            testEmail: async () => {
+                if (!window.emailjs) { console.warn('EmailJS not loaded'); return; }
+                try {
+                    const r = await emailjs.send(EMAILJS.serviceId, EMAILJS.templateId, {
+                        donor_name: 'Test Donor',
+                        to_email: 'lafzlocator@gmail.com',
+                        reply_to: 'test@reply.com',
+                        book_title: 'Test Book',
+                        booker_id: 'TEST-123',
+                        booker_email: 'test@reply.com',
+                        booking_id: 'BK-TEST',
+                        booking_time: new Date().toLocaleString()
+                    });
+                    console.log('✅ Email sent:', r);
+                } catch (e) { console.error('❌ Email fail:', e); }
+            },
+            testDB: () => {
+                if (!db) { console.warn('db not ready'); return }
+                db.ref('books').once('value').then(s => console.log('BOOKS:', Object.keys(s.val() || {}).length)).catch(e => console.error('BOOKS FAIL:', e.code, e.message));
+                db.ref('lafzPodsDonations').once('value').then(s => console.log('DONATIONS:', Object.keys(s.val() || {}).length)).catch(e => console.error('DONATIONS FAIL:', e.code, e.message));
+            }
+        };
+        console.log('[Lafz] Ready. Try `LafzDebug.testEmail()` in console.');
+    </script>
+</body>
+
+</html>
